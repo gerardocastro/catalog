@@ -1,0 +1,336 @@
+/*********** body content ***********/
+@font-face {
+  font-family: Istok;
+  src: url(../Istok-Regular.ttf);
+}
+
+* {
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+}
+
+html, body {
+  -webkit-touch-callout: none;                
+  -webkit-text-size-adjust: none;             
+  -webkit-user-select: none; 
+}
+
+html, body, .ui-page {
+  background: #f3f3f3;
+  font-family: Istok;
+  margin: 0px !important;
+  padding: 0px !important;
+  height: 100%;
+  width: 100%;
+  text-transform: uppercase;
+}
+
+.ui-content {
+  width: 100%;
+  margin: 0px !important;
+  padding: 0px !important;
+}
+
+/*********** menu ***********/
+
+.menu {
+  background-color: #d40139;
+  height: 82px;
+  width: 100%;
+  position: relative;
+  font-size: 20px;
+  line-height: 82px;
+  text-shadow: none;
+}
+
+.menu .back {
+  position: absolute;
+  top: 0px;
+  left: 30px;
+  text-align: right;
+  background: url(../img/back-arrow.png) no-repeat left center;
+  background-size: 16px 27px;
+  width: 80px;
+  color: #fff !important;
+}
+
+.menu .back:before {
+  content: "Back";
+}
+
+.menu .update {
+  position: absolute;
+  top: 0px;
+  left: 30px;
+  text-align: left;
+  width: 100px;
+  color: #fff !important;
+}
+
+.menu .division {
+  position: absolute;
+  top: 25%;
+  right: 35px;
+  height: 38px;
+  width: 100px;
+}
+
+.menu .division-option-name {
+  position: absolute;
+  top: 0;
+  right: 50%;
+  line-height: 82px;
+  width: 70px;
+  text-align: center;
+  color: #fff !important;
+}
+
+.menu .business-solutions-thumbnail {
+  background: url(../img/rogers-business-solutions-thumbnail.png) transparent no-repeat scroll center center;
+  background-size: contain;
+}
+
+.menu .carrier-services-thumbnail {
+  background: url(../img/rogers-carrier-services-thumbnail.png) transparent no-repeat scroll center center;
+  background-size: contain;
+}
+
+.menu .data-centres-thumbnail {
+  background: url(../img/rogers-data-centres-thumbnail.png) transparent no-repeat scroll center center;
+  background-size: contain;
+}
+
+/*********** general ***********/ 
+
+.table {
+  display: table;
+  padding: 0px;
+  margin: 0px;
+  width: 100%;
+  height: 100%;
+}
+
+.table .cell {
+  display: table-cell;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.title {
+  border-left: 8px solid #d40139;
+  font-size: 35px;
+  padding-left: 10px;
+  line-height: 30px;
+}
+
+.division-img {
+  width: 248px;
+  height: 70px;
+  display: block;
+  margin: 0 auto;
+}
+
+.business-solutions {
+  background: url(../img/rogers-business-solutions.png) transparent no-repeat scroll center center;
+  background-size: contain;
+}
+
+.data-centres {
+  background: url(../img/rogers-data-centres.png) transparent no-repeat scroll center center;
+  background-size: contain;
+}
+
+.carrier-services {
+  background: url(../img/rogers-carrier-services.png) transparent no-repeat scroll center center;
+  background-size: contain;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+.collateral-icon {
+  background: url(../img/collateral-icon.png) transparent no-repeat scroll top center;
+  background-size: 53px;
+}
+
+.maps-icon {
+  background: url(../img/maps-icon.png) transparent no-repeat scroll;
+  background-position: center 10px;
+  background-size: 53px;
+}
+
+.videos-icon {
+  background: url(../img/videos-icon.png) transparent no-repeat scroll top center;
+  background-size: 53px;
+}
+
+/*********** divisions ***********/ 
+
+#divisions-page .division-title {
+  width: 322px;
+  margin: 0 auto 132px;
+}
+
+#divisions-page ul li {
+  margin-bottom: 100px;
+}
+
+#divisions-page ul li:last-child {
+  margin-bottom: 0px;
+}
+
+/*********** division ***********/
+
+#division-page .division-title {
+  margin-bottom: 130px;
+}
+
+#division-page .table {
+  height: calc(100% - 82px);
+}
+
+#division-page ul li {
+  display: inline-block;
+  margin-right: 107px;
+}
+
+#division-page ul li a {
+  width: 105px;
+  height: 80px;
+  display: block;
+  position: relative;
+}
+
+#division-page ul li span {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  color: black;
+}
+
+#division-page ul li:last-child {
+  margin-right: 0px;
+}
+
+/*********** collateral ***********/
+
+#collaterals-page .collaterals {
+  padding: 35px;
+}
+
+#collaterals-page .collaterals li {
+  padding: 30px 0px;
+  border-bottom: solid 1px #ccc;
+}
+
+#collaterals-page .collaterals li li,
+#collaterals-page .collaterals li:last-child {
+  border-bottom: none;
+}
+
+#collaterals-page .collaterals li li {
+  padding: 0px;
+  margin-bottom: 20px;
+}
+
+#collaterals-page .collaterals li li:last-child {
+  margin-bottom: 0px;
+}
+
+#collaterals-page .title {
+  margin-bottom: 35px;
+}
+
+#collaterals-page a {
+  color: #d40139;
+}
+
+/*********** collateral pdf ***********/
+
+#collateral-file .pdf {
+  width: 100%;
+  height: 100%;
+}
+
+/*********** map ***********/
+
+#map-page .map {
+  width: 768px;
+  height: 1024px;
+}
+
+#map-page .map img {
+  display: block;
+  width: 768px;
+  height: 1024px;
+}
+
+/*********** videos ***********/
+
+#videos-page ul li {
+  clear: both;
+  overflow: auto;
+  margin-bottom: 25px;
+}
+
+#videos-page ul li:last-child {
+  margin-bottom: 0px;
+}
+
+#videos-page .videos {
+  padding: 40px;
+}
+
+#videos-page .thumbnail {
+  margin-right: 20px;
+  float: left;
+  background: url(../img/play-img.png) #000 no-repeat center;
+  width: 210px;
+  height: 160px;
+  z-index: 2;
+}
+
+#videos-page .thumbnail img {
+  width: 100%;
+  height: 100%;
+  filter:alpha(opacity=30);
+  opacity: 0.30;
+  z-index: 0;
+}
+
+#videos-page .info {
+  float: left;
+}
+
+#videos-page .title {
+  margin-bottom: 25px;
+}
+
+.image-wrapper {
+  width: 100%;
+  position: relative;
+}
+
+.image-wrapper img {
+  display: block;
+}
+
+.marker {
+  width: 25px;
+  height: 25px;
+  background: #f66;
+  background: url(../img/magnifying-glass.png) transparent no-repeat center;
+  text-align: center;
+  position: absolute;
+  line-height: 20px;
+  cursor: pointer;
+}
+

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="format-detection" content="telephone=no" />
+    <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
+    <meta name="viewport" content="initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <link rel="stylesheet"  href="css/style_ipad_base.css" />
+    <link rel="stylesheet" media="(orientation: landscape)" href="css/style_ipad_landscape.css" />
+    <link rel="stylesheet" media="(orientation: portrait)" href="css/style_ipad_portrait.css" />
+    <link rel="stylesheet" href="css/jquery.mobile-1.4.1.min.css" />
+    <title>Rogers</title>
+  </head>
+  <body>
+    <!-- divisions -->
+    <div data-role="page" id='divisions-page'>
+      <div data-role="header">
+        <div class='menu'>
+          <a href='#' id='update-app' class='update'>Update</a>
+        </div>
+      </div>
+      <div data-role="content">
+        <div class='table'>
+          <div class='cell'>
+            <div class='title division-title'>SELECT A DIVISION</div>
+            <ul>
+              <li>
+                <a href='#division-page' data-division='Business Solutions' class='division division-img business-solutions'></a>
+              </li>
+              <li>
+                <a href='#division-page' data-division='Data Centres' class='division division-img data-centres'></a>
+              </li>
+              <li>
+                <a href='#division-page' datata-division='Carrier Services' class='division division-img carrier-services'></a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- divisions-menu -->
+    <div data-role="page" id='division-page'>
+      <div data-role="header">
+        <div class='menu'>
+          <a href='#' data-rel="back" class='back'></a>
+        </div>
+      </div> 
+      <div data-role="content">
+        <div class='table'>
+          <div class='cell'>
+            <div class='division-img division-title' id='division-image-title'></div>
+            <ul>
+              <li>
+                <a href='#collaterals-page' data-option='collaterals' class='division-option collateral-icon'><span>collateral</span></a>
+              </li>
+              <li>
+                <a href='#videos-page' data-option='videos' class='division-option videos-icon'><span>videos</span></a>
+              </li>
+              <li>
+                <a href='#map-page' data-option='maps' class='division-option maps-icon'><span>map</span></a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- collaterals -->
+    <div data-role="page" id='collaterals-page'>
+      <div data-role="header">
+        <div class='menu'>
+          <a href='#' data-rel="back" class='back'></a>
+          <div class='division-option-name'>collaterals</div>
+          <div class='division top-logo'></div>
+        </div>
+      </div> 
+      <div data-role="content">
+        <ul class='collaterals' id='collaterals'>
+        </ul>
+      </div> 
+    </div>
+    <!-- map -->
+    <div data-role="page" id='map-page'>
+      <div data-role="header">
+        <div class='menu'>
+          <a href='#' data-rel="back" class='back'></a>
+          <div class='division-option-name'>map</div>
+          <div class='division top-logo'></div>
+        </div>
+      </div> 
+      <div data-role="content">
+        <div class='table'>
+          <div class='cell'>
+            <div id="image-wrapper" data-captions="" class="image-wrapper" data-id=''>
+              <img src='' id='map-img' class='map-img' data-id=''>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- map zoom -->
+    <div data-role="page" id='map-zoom'>
+      <div data-role="header">
+        <div class='menu'>
+          <a href='#' data-rel="back" class='back'></a>
+          <div class='division-option-name'>map</div>
+          <div class='division top-logo'></div>
+        </div>
+      </div> 
+      <div data-role="content">
+        <div class='table'>
+          <div class='cell'>
+            <div class="image-wrapper">
+              <img src='' id='map-zoom-img' class='map-img'>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- videos -->
+    <div data-role="page" id='videos-page'>
+      <div data-role="header">
+        <div class='menu'>
+          <a href='#' data-rel="back" class='back'></a>
+          <div class='division-option-name'>videos</div>
+          <div class='division top-logo'></div>
+        </div>
+      </div> 
+      <div data-role="content">
+        <ul class='videos' id='videos'>
+        </ul>
+      </div>
+    </div>
+    <!-- video -->
+    <div data-role="page" id='video-page'>
+      <div data-role="header">
+        <div class='menu'>
+          <a href='#' data-rel="back" class='back' id='video-back'></a>
+          <div class='division-option-name'>video</div>
+          <div class='division top-logo'></div>
+        </div>
+      </div> 
+      <div data-role="content">
+        <video id='video-player' width="100%" height="100%" id='video-player' controls>
+          <source src="" type="video/mp4" id='video-src'>
+        </video>
+      </div>
+    </div>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script src="js/jquery-2.0.min.js"></script>
+    <script src="js/jquery.mobile-1.4.1.min.js"></script>
+    <script type="text/javascript" src="js/jsondiffpatch.min.js"></script>
+    <script type="text/javascript" src="js/markers.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript" src="js/retina-1.1.0.min.js"></script>
+    <script type="text/javascript">
+      jsondiffpatch.config.objectHash = function(obj) {
+        return obj._id || obj.id || obj.name || JSON.stringify(obj);
+      };
+    </script>
+  </body>
+</html>
