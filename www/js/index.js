@@ -4,12 +4,14 @@ document.addEventListener("deviceready", onDeviceReady, false);
 var develop = 0;
 var db, apiData, division, divisionOption, mapWidth, mapHeight, markerWidthPercentage, markerHeightPercentage;
 var addRecords = [], changeRecords = [], removeRecords = [], apiPath, finishDowloading = 0, downloadCounter = 0;
+var dataType = ['collaterals', 'videos', 'maps', 'map_markers'];
 var player = document.getElementById('video-player');
 
 function onDeviceReady() {
+  $('body').css('display', 'block');
   getFilePath();
   db = window.openDatabase('rogers', '2.0', 'rogers', 1000000);
-  db.transaction(createDBtables, errorDB, successCreateDBtables);
+  db.transaction(createDBtables, function(err){ systemFail(err.code, 1) }, successCreateDBtables);
 }
 
 function successCreateDBtables() {
@@ -17,12 +19,9 @@ function successCreateDBtables() {
   setApiPath();
 }
 
-function fileSystemFail(evt) {
-  alert(evt.target.error.code);
-}
-
-function errorDB(err) {
-  alert("Error processing SQL: " + err.message);
+function systemFail(errorCode, action) {
+  showAlert('There was an error updating the application. Please check that your iPad ' +
+    'is connected to the internet and try again later. (ERROR: '+ action +'-'+ errorCode +')');
 }
 
 function setApiPath() {
@@ -40,18 +39,18 @@ function getFilePath(){
           localStorage['rogersFilePath'] = fileEntry.toNativeURL().replace("dummy.html", "");
           localStorage['rogersFilePathStorage'] = fileEntry.toURL().replace("dummy.html", "");
           fileEntry.remove();
-        }, fileSystemFail);
-  }, fileSystemFail);
+        }, function(evt){ systemFail(evt.target.error.code, 23) });
+  }, function(evt){ systemFail(evt.target.error.code, 24) });
 }
 
 function createDBtables(tx) {
-  // if (develop == 1) {
+  if (develop == 1) {
     tx.executeSql('DROP TABLE IF EXISTS collaterals');
     tx.executeSql('DROP TABLE IF EXISTS videos');
     tx.executeSql('DROP TABLE IF EXISTS maps');
     tx.executeSql('DROP TABLE IF EXISTS map_markers');
     tx.executeSql('DROP TABLE IF EXISTS jsons');
-  // }
+  }
 
   tx.executeSql('CREATE TABLE IF NOT EXISTS collaterals (id INTEGER PRIMARY KEY, title TEXT,' +
     'division TEXT, category TEXT, file_url TEXT, file_name TEXT, downloaded_file INTEGER DEFAULT 0)');
@@ -68,6 +67,7 @@ function createDBtables(tx) {
 
 function createListeners() {
   $('#update-app').on('click', function() {
+    showLoading();
     getApiData();
   });
 
@@ -85,8 +85,8 @@ function createListeners() {
 
   $(document).on('pagebeforeshow', '#division-page', function(e, data) {
     var logo = displayLogo();
-    $('#division-image-title').addClass(logo);
-    $('.top-logo').addClass(logo +'-thumbnail');
+    $('#division-image-title').removeClass().attr('class', 'division-img division-title '+ logo);
+    $('.top-logo').removeClass().attr('class','division top-logo '+ logo +'-thumbnail');
   });
 
   $(document).on('pagebeforeshow', '#collaterals-page', function(e, data) { 
@@ -101,17 +101,32 @@ function createListeners() {
     loadData();
   });
 
-  $(window).on( "orientationchange", function(event) {
-    var activePage = $.mobile.activePage.attr('id');
-    if (activePage == 'map-page' || activePage == 'map-zoom')
-      loadData();
+  $(document).on('click', '.map-view', function(e, data) { 
+    mapVisibleStatus();
+    removeAsLandscape();
   });
 
-  $('#map-img').on('click', function(){
-    var id = $(this).data('id');
+  $(document).on('pageshow', '#map-page', function(e, data) { 
+    setTimeout(function(){
+      shouldRotateToOrientation();
+    }, 50);
+  });
+
+  $(document).on('pageshow', '#map-zoom', function(e, data) { 
+    setTimeout(function(){
+      shouldRotateToOrientation();
+    }, 50);
+  });
+
+  $( window ).on( "orientationchange", function( event ) {
+    shouldRotateToOrientation();
+  });
+
+  $('#map-img').click(function(){
+    var id = $(this).attr('data-id');
+    alert($(this).attr('data-id'));
     drawMarkers(id);
   });
-
 }
 
 function displayLogo() {
@@ -130,8 +145,8 @@ function displayLogo() {
 
 function loadData() {
   db.transaction(function(tx){
-    tx.executeSql('SELECT * FROM ' + divisionOption + ' WHERE division="' + division + '"', [], successLoadData, errorDB);
-  }, errorDB);
+    tx.executeSql('SELECT * FROM ' + divisionOption + ' WHERE division="' + division + '"', [], successLoadData, function(err){ systemFail(err.code, 2) });
+  }, function(err){ systemFail(err.code, 3) });
 }
 
 function successLoadData(tx, results) {
@@ -162,7 +177,7 @@ function drawCollaterals(results) {
       var itemList = $('<li/>').appendTo(ul);
       var collateralSrc = localStorage['rogersFilePath'] + item.file_name
       var itemlink = $('<a/>').attr('href', '#').
-        attr('onclick', "window.open('"+ collateralSrc +"', '_blank', 'toolbar=yes');").
+        attr('onclick', "window.open('"+ collateralSrc +"', '_blank', 'toolbar=yes,location=no,closebuttoncaption=BACK,EnableViewPortScale=yes');").
         text(item.title).appendTo(itemList); 
     });
   });
@@ -224,27 +239,16 @@ function drawMap(tx, results) {
 }
 
 function getMapOrientation() {
-  if (window.orientation == 0 || window.orientation == 180) {
-    mapWidth = 768; 
-    mapHeight = 600;
-    markerWidthPercentage = 0.79; 
-    markerHeightPercentage = 0.76;
-  }
-  else {
-    mapWidth = 1024; 
-    mapHeight = 662;
-    markerWidthPercentage = 0.88; 
-    markerHeightPercentage = 1.01;
-  }
-  $('.map-img').width(mapWidth).height(mapHeight);
+  markerWidthPercentage = 0.88; 
+  markerHeightPercentage = 1.01;
 }
 
 function drawMarkers(id) {
   db.transaction(function(tx){
     tx.executeSql('SELECT * FROM map_markers WHERE map_id="' + id + '"', [], function(tx, markers){
       getMarkers(tx, markers);
-    }, errorDB);
-  }, errorDB);
+    }, function(err){ systemFail(err.code, 4) });
+  }, function(err){ systemFail(err.code, 5) });
 }
 
 function getMarkers(tx, results) {
@@ -297,18 +301,60 @@ function getApiData() {
     dataType   : 'JSON',
     success    : function(response) {
       apiData = response;
+      getMissingFiles();
       populateDB();
     },
     error      : function() {
-      alert('There was an error trying to update the information.');                  
+      hideLoading();
+      systemFail(0, 28)
     }
   });
 }
 
+function showLoading() {
+  $("body").addClass('ui-disabled');
+  $.mobile.loading( 'show', {
+    text: 'Updating',
+    textVisible: true,
+    theme: 'b',
+    textonly: false
+  });
+}
+
+function hideLoading() {
+  setTimeout(function(){
+    $.mobile.loading( "hide" );
+    $("body").removeClass('ui-disabled');
+  },3000);
+}
+
+function getMissingFiles() {
+  var downloadThumb;
+  $.each(dataType, function(index, type) {
+    if (dataType == 'videos')
+      downloadThumb = ' OR downloaded_thumb=0';
+    else
+      downloadThumb = '';
+
+    db.transaction(function(tx){
+      tx.executeSql('SELECT * FROM '+ type +' WHERE downloaded_file=0'+ downloadThumb, [], downloadMissingFiles, function(err){ systemFail(err.code, 6) });
+    }, function(err){ systemFail(err.code, 7) });
+  });
+}
+
+function downloadMissingFiles(tx, results) {
+  var len = results.rows.length;
+  if (len > 0) {
+    $.each(results, function(index, item) {
+      downloadFileItem(tx, item);
+    });
+  }
+}
+
 function populateDB() {
   db.transaction(function(tx){
-    tx.executeSql('SELECT * FROM jsons ORDER BY id DESC LIMIT 1', [], updateDbData, errorDB);
-  }, errorDB);
+    tx.executeSql('SELECT * FROM jsons ORDER BY id DESC LIMIT 1', [], updateDbData, function(err){ systemFail(err.code, 8) });
+  }, function(err){ systemFail(err.code, 9) });
 }
 
 function updateDbData(tx, results) {
@@ -327,18 +373,17 @@ function updateDbData(tx, results) {
     removeRecords = [];
     
     formatApiData(data);
-    tx.executeSql('INSERT INTO jsons (json) VALUES ("' + escape(JSON.stringify(apiData)) + '")');
-    //callback
-    removeDBRecords(tx);
-    addDBRecords(tx);
-    updateDBRecords(tx);
+    tx.executeSql("INSERT INTO jsons (json) VALUES (?)", 
+      [escape(JSON.stringify(apiData))], function(tx, results){
+        removeDBRecords(tx);
+        updateDBRecords(tx);
+        addDBRecords(tx);
+      }, function(err){ systemFail(err.code, 10) });
   }
-  else
-    DBUpdated();
-}
-
-function DBUpdated() {
-  alert('The information has been updated.');
+  else {
+    hideLoading();
+    showAlert('The information has been updated.');
+  }
 }
 
 function itemType(type) {
@@ -350,35 +395,50 @@ function itemType(type) {
 
 function removeDBRecords(tx) {
   var type;
-  $.each(removeRecords, function(index, item) {
-    type = itemType(item.type);
-    deleteRecord(tx, type, item.item_id);
-  });
+  if (removeRecords.length > 0) {
+    showLoading();
+    $.each(removeRecords, function(index, item) {
+      type = itemType(item.type);
+      deleteRecord(tx, type, item.item_id);
+    });
+    hideLoading();
+  }
 }
 
 function addDBRecords(tx) {
   var items;
   var type;
-  $.each(addRecords, function(index, itemsArray) {
-    items = itemsArray.item[0];
-    if ($.isArray(items)) {
-      type = itemType(itemsArray.type);
-      $.each(items, function(index, item) {
-        addRecord(tx, type, item);
-      });
-    } else {
-      type = itemType(itemsArray.parent);
-      addRecord(tx, type, items);
-    }
-  });
+  if (addRecords.length > 0) {
+    showLoading();
+    $.each(addRecords, function(index, itemsArray) {
+      items = itemsArray.item[0];
+      if ($.isArray(items)) {
+        type = itemType(itemsArray.type);
+        $.each(items, function(index, item) {
+          addRecord(tx, type, item);
+        });
+      } else {
+        type = itemType(itemsArray.parent);
+        addRecord(tx, type, items);
+      }
+    });
+  }
 }
 
 function updateDBRecords(tx) {
   var type;
-  $.each(changeRecords, function(index, item) {
-    type = itemType(item.type);
-    updateRecord(tx, type, item.change[0], item.field, item.change[2]);
-  });
+  var fileDownload = 0;
+  if (changeRecords.length > 0) {
+    showLoading();
+    $.each(changeRecords, function(index, item) {
+      type = itemType(item.type);
+      updateRecord(tx, type, item.change[0], item.field, item.change[2]);
+      if (type == 'file_url') 
+        fileDownload = 1;
+    });
+    if (fileDownload == 0)
+      hideLoading();
+  }
 }
 
 function addRecord(tx, type, item, parentId) {
@@ -392,7 +452,6 @@ function addRecord(tx, type, item, parentId) {
       break;
     case 'maps':
       addMap(tx, item.id, item.division, item.file_url, item.file_name);
-      //callback
       $.each(item.markers.coords, function(index, marker) {
         addMarker(tx, marker.id, item.id, marker.left, marker.top, marker.file_url, marker.file_name);
       });
@@ -410,67 +469,126 @@ function deleteRecord(tx, type, itemId) {
 }
 
 function updateRecord(tx, type, itemId, field, value) {
-  tx.executeSql('UPDATE '+ type +' SET '+ field +'= "'+ value +'" WHERE id='+ itemId);
+  var fileStatus = '';
+  // var fileStatus = updateFileStatus(field);
+  // var fileToDelete = null;
+  // if (fileStatus != '') 
+  //   fileToDelete = getFileToDelete(tx, field, itemId, type);
+  
+  tx.executeSql('UPDATE '+ type +' SET '+ field +'= "'+ value +'" '+ fileStatus +' WHERE id='+ itemId, [], function(tx, results){
+      if (field == 'file_url' || field == 'thumbnail_url'){
+        tx.executeSql('SELECT * FROM '+ type +' WHERE id='+ itemId, [],  function(tx, results){
+          // console.log(fileToDelete);
+          // if (fileToDelete) {
+          //   deleteFile(fileToDelete);
+          //   console.log('delete 3 '+ fileToDelete);
+          // }
+          downloadFileItem(type, results);
+        }, function(err){ systemFail(err.code, 11) });
+      }
+    }, function(err){ systemFail(err.code, 12) });
+}
+
+function updateFileStatus(field) {
+  fileStatus = ''
+  if (field == 'file_url')
+    fileStatus = ', downloaded_file=0';
+  else
+    if (field == 'thumbnail_url')
+      fileStatus = ', downloaded_thumb=0';
+  return fileStatus;
+}
+
+function getFileToDelete(tx, field, itemId, type) {
+  tx.executeSql('SELECT * FROM '+ type +' WHERE id='+ itemId, [],  function(tx, results){
+    var item = results.rows.item(0);
+    console.log(item, field, type);
+    return item[field];
+  }, function(err){ systemFail(err.code, 13) });
+  return null;
+}
+
+function deleteFile(fileName){
+  window.requestFileSystem( LocalFileSystem.PERSISTENT, 0,
+    function onFileSystemSuccess(fileSystem) {
+      fileSystem.root.getFile( fileName, { create: true, exclusive: false },
+        function gotFileEntry(fileEntry) {
+          fileEntry.remove();
+        }, function(evt){ systemFail(evt.target.error.code, 25) });
+  }, function(evt){ systemFail(evt.target.error.code, 26) });
 }
 
 function addCollateral(tx, id, title, division, category, file_url, file_name) {
-  tx.executeSql('INSERT INTO collaterals (id, title, division, category, file_url, file_name)' +
-    'VALUES ("'+ id +'", "'+ title +'", "'+ division +'", "'+ category +'", "'+ file_url +'", "'+ file_name +'")');
-  tx.executeSql('SELECT * FROM collaterals LIMIT 1', [], downloadFileItem, errorDB);
+  tx.executeSql("INSERT INTO collaterals (id, title, division, category, file_url, file_name) values (?,?,?,?,?,?)", 
+    [id, title, division, category, file_url, file_name], function(tx, results){
+      tx.executeSql('SELECT * FROM collaterals WHERE id='+ results.insertId, [],  function(tx, results){
+        downloadFileItem('collaterals', results);
+      }, function(err){ systemFail(err.code, 14) });
+    }, function(err){ systemFail(err.code, 15) });
 }
 
 function addVideo(tx, id, title, division, description, file_url, file_name, thumbnail_url, thumbnail_name) {
-  tx.executeSql('INSERT INTO videos (id, title, division, description, file_url, file_name, thumbnail_url, thumbnail_name)' +
-    'VALUES ("'+ id +'", "'+ title +'", "'+ division +'", "'+ description +'", "'+ file_url +'", "'+ file_name +
-    '", "'+ thumbnail_url +'", "'+ thumbnail_name +'")');
-  tx.executeSql('SELECT * FROM videos LIMIT 1', [], downloadFileItem, errorDB);
+  tx.executeSql("INSERT INTO videos (id, title, division, description, file_url, file_name, thumbnail_url, thumbnail_name) values (?,?,?,?,?,?,?,?)", 
+    [id, title, division, description, file_url, file_name, thumbnail_url, thumbnail_name], function(tx, results){
+      tx.executeSql('SELECT * FROM videos WHERE id='+ results.insertId, [],  function(tx, results){
+        downloadFileItem('videos', results);
+      }, function(err){ systemFail(err.code, 16) });
+    }, function(err){ systemFail(err.code, 17) });
 }
 
 function addMap(tx, id, division, file_url, file_name) {
-  tx.executeSql('INSERT INTO maps (id, division, file_url, file_name)' +
-    'VALUES ("'+ id +'", "'+ division +'", "'+ file_url +'", "'+ file_name +'")');
-  tx.executeSql('SELECT * FROM maps LIMIT 1', [], downloadFileItem, errorDB);
+  tx.executeSql("INSERT INTO maps (id, division, file_url, file_name) values (?,?,?,?)", 
+    [id, division, file_url, file_name], function(tx, results){
+      tx.executeSql('SELECT * FROM maps WHERE id='+ results.insertId, [],  function(tx, results){
+        downloadFileItem('maps', results);
+      }, function(err){ systemFail(err.code, 18) });
+    }, function(err){ systemFail(err.code, 19) });
 }
 
 function addMarker(tx, id, mapId, left, top, file_url, file_name) {
-  tx.executeSql('INSERT INTO map_markers (id, map_id, left, top, file_url, file_name)' +
-    'VALUES ("'+ id +'", "'+ mapId +'", "'+ left +'", "'+ top +'", "'+ file_url +'", "'+ file_name +'")');
-  tx.executeSql('SELECT * FROM map_markers LIMIT 1', [], downloadFileItem, errorDB);
+  tx.executeSql("INSERT INTO map_markers (id, map_id, left, top, file_url, file_name) values (?,?,?,?,?,?)", 
+    [id, mapId, left, top, file_url, file_name], function(tx, results){
+      tx.executeSql('SELECT * FROM map_markers WHERE id='+ results.insertId, [], function(tx, results){
+        downloadFileItem('map_markers', results);
+      }, function(err){ systemFail(err.code, 20) });
+    }, function(err){ systemFail(err.code, 21) });
 }
 
-function downloadFileItem(tx, results) {
+function downloadFileItem(type, results) {
   var item = results.rows.item(0);
-  if (item.downloaded_file == 0) {
-    downloadFile(item.file_url, item.file_name);
-    if (item.thumbnail_url)
-      downloadFile(item.thumbnail_url, item.thumbnail_name);
-  }
+  if (item.downloaded_file == 0)
+    downloadFile(type, 'downloaded_file', item.id, item.file_url, item.file_name);
+  if (item.thumbnail_url && item.downloaded_thumb == 0)
+    downloadFile(type, 'downloaded_thumb', item.id, item.thumbnail_url, item.thumbnail_name);
 }
 
-function downloadFile(itemUrl, itemName){
+function downloadFile(type, field, itemId, itemUrl, itemName){
   updateDownloading('add');
   var fileTransfer = new FileTransfer();
   var encodedPath = encodeURI(itemUrl);
   var item = localStorage['rogersFilePathStorage'] + itemName;
   fileTransfer.download( encodedPath, item,
     function (file) {
-      updateDownloading('subtract');
+      updateDownloading('substract');
+      db.transaction(function(tx){
+        updateRecord(tx, type, itemId, field, '1');
+      }, function(err){ systemFail(err.code, 22) });
     },
     function (error) {
-      updateDownloading('subtract');
-      alert("download error source " + error.source);
-    }, fileSystemFail);
+      updateDownloading('substract');
+      systemFail(0, 27);
+    }, function(evt){ systemFail(evt.target.error.code, 26) });
 }
 
 function updateDownloading(action) {
   if (action == 'add')
     downloadCounter = downloadCounter + 1;
   else
-    if (action == 'subtract' && downloadCounter > 0)
+    if (action == 'substract' && downloadCounter > 0)
       downloadCounter = downloadCounter - 1;
-    else
-      if (downloadCounter == 0)
-        DBUpdated();
+
+  if (downloadCounter == 0)
+    hideLoading();
 }
 
 function formatApiData(obj, subparent, parent) {
@@ -497,4 +615,62 @@ function formatApiData(obj, subparent, parent) {
       }
     }
   }
+}
+
+function showAlert(message) {
+  navigator.notification.alert(
+    message,
+    alertDismissed,
+    'RBS Asset Kit',
+    'Ok'
+  );
+}
+
+function alertDismissed() {}
+
+function shouldRotateToOrientation(rotation) {
+  var activePage = $.mobile.activePage.attr('id');
+  if (activePage == 'map-page' || activePage == 'map-zoom') {
+    $.extend($.mobile.zoom, {locked:false,enabled:true});
+    mapVisibleStatus();
+    switch (window.orientation) {
+      case 0:
+        displayAsLandscape(90);
+        return false;
+      case 180:
+        displayAsLandscape(-90);
+        return false;
+      case 90:
+        removeAsLandscape();
+        return false;
+      case -90:
+        removeAsLandscape();
+        return false;
+    }
+  }
+}
+
+function displayAsLandscape(degrees) {
+  var pages = $('#map-page, #map-zoom');
+  if (!pages.hasClass('landscape')) {
+    $('#map-page .ui-content, #map-zoom .ui-content').addClass('landscape-content');
+    $('#map-page, #map-zoom').css('-webkit-transform', 'rotate('+ degrees +'deg)').addClass('landscape');
+  }
+  mapVisibleStatus(true);
+}
+
+function removeAsLandscape() {
+  var pages = $('#map-page, #map-zoom');
+  if (pages.hasClass('landscape')) {
+    pages.removeAttr('style').removeClass('landscape');
+    $('#map-page .ui-content, #map-zoom .ui-content').removeClass('landscape-content');
+  }
+  mapVisibleStatus(true);
+}
+
+function mapVisibleStatus(visible) {
+  if (visible === true)
+    $('#map-page, #map-zoom').addClass('visible');
+  else
+    $('#map-page, #map-zoom').removeClass('visible');
 }

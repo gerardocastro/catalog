@@ -24,6 +24,10 @@ html, body, .ui-page {
   text-transform: uppercase;
 }
 
+body {
+  display: none;
+}
+
 .ui-content {
   width: 100%;
   margin: 0px !important;
@@ -307,6 +311,7 @@ a {
 }
 
 #videos-page .info {
+  width: 455px;
   float: left;
 }
 
@@ -315,12 +320,16 @@ a {
 }
 
 .image-wrapper {
-  width: 100%;
   position: relative;
+  margin: auto;
+  width: 1024px;
+  height: 684px;
 }
 
 .image-wrapper img {
   display: block;
+  width: 1024px;
+  height: 684px;
 }
 
 .marker {
@@ -334,3 +343,32 @@ a {
   cursor: pointer;
 }
 
+.ui-disabled {
+  opacity: 1;
+}
+
+.landscape {
+  width: 1024px !important;
+  min-height: 768px !important;
+  height: 768px !important;
+  position: absolute !important;
+  top: 128px !important;
+  left: -129px !important;
+  /*transition: all 500ms ease-in-out;*/
+  /*-webkit-backface-visibility: hidden;*/
+  opacity: 1 !important;
+}
+
+.landscape-content {
+  min-height: 684px !important;
+  height: 684px !important;
+}
+
+#map-page,
+#map-zoom {
+  visibility: hidden;
+}
+
+.visible {
+  visibility: visible !important;
+}
